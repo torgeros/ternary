@@ -46,6 +46,10 @@ public class Board {
         board[x-1][y-1] = value;
     }
 
+    public boolean has(int x, int y) {
+        return (x>0) && (y>0) && (x<=width) && (y<=height);
+    }
+
     public void print() {
         String result = String.format("%s%n", formatTableTop);
         for (int y = 0; y < height; y++) {
@@ -56,6 +60,6 @@ public class Board {
             result += String.format("%s |%n", line);
         }
         result += formatTableBottom;
-        System.out.print(result);
+        System.out.println(result);
     }
 }
