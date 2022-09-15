@@ -11,5 +11,5 @@ First, compile the program by running
 Then, start the program by running
 
 ```bash
-java Ternary <gamename> <b|w>
+java torgeros.connect3.Ternary <gamename> <b|w>
 ```
