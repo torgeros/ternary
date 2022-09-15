@@ -2,28 +2,42 @@ package torgeros.connect3;
 
 import java.sql.Struct;
 import torgeros.connect3.Board.Field;
+import torgeros.connect3.agent.Agent;
+import torgeros.connect3.GameClient;
 
 public class ConnectThree {
     public enum PlayerColor {
-        WHITE_PLAYER (Field.WHITE),
-        BLACK_PLAYER (Field.BLACK);
+        WHITE_PLAYER (Field.WHITE, "white"),
+        BLACK_PLAYER (Field.BLACK, "black");
 
         private final Field f;
-        private PlayerColor(Field f) {
+        private final String clientName;
+        private PlayerColor(Field f, String clientName) {
             this.f = f;
+            this.clientName = clientName;
         }
         public Field getField() {
             return f;
         }
+        public String getClientName() {
+            return clientName;
+        }
     }
 
     private Board board;
+    private Agent agent;
+    final private PlayerColor ownColor;
+    private GameClient client;
 
-    public ConnectThree(String gamename, PlayerColor color) {
+    public ConnectThree(String gamename, PlayerColor color, Agent agent) {
         System.out.println("===========================================");
         System.out.printf("Starting game %s as color %s%n", gamename, color);
         System.out.printf("Game Representation: WHITE %c, BLACK %c%n", Field.WHITE.getChar(), Field.BLACK.getChar());
         board = new Board(5, 4);
+        this.agent = agent;
+        this.ownColor = color;
+
+        client = new GameClient(gamename, color.getClientName());
     }
 
     public void play() {
@@ -31,6 +45,14 @@ public class ConnectThree {
         board.print();
         processMove(PlayerColor.BLACK_PLAYER, "14E");
         board.print();
+
+        client.connect();
+
+        while (!board.isTerminal()) {
+            agent.updateInternalBoard(board);
+            processMove(ownColor, agent.getBestMove());
+            board.print();
+        }
     }
 
     private void setBoardStartPosition() {

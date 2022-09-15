@@ -16,7 +16,7 @@
                 "${workspaceFolder}/src"
             ],
             "preLaunchTask": "build",
-            "args": "torgestestgame b"
+            "args": "torgestestgame w human"
         }
     ]
 }

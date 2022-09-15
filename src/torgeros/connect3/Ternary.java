@@ -1,10 +1,13 @@
 package torgeros.connect3;
 
 import torgeros.connect3.ConnectThree.PlayerColor;
+import torgeros.connect3.agent.Agent;
+import torgeros.connect3.agent.Human;
+import torgeros.connect3.agent.Ai;
 
 public class Ternary {
     public static void main(String[] args) {
-        if (args.length != 2) {
+        if (args.length != 3) {
             exitWrongArgs();
         }
         String gamename = args[0];
@@ -17,13 +20,22 @@ public class Ternary {
             exitWrongArgs();
             return;
         }
-        (new ConnectThree(gamename, agentcolor)).play();
+        Agent agent;
+        if (args[2].equals("human")) {
+            agent = new Human();
+        } else if (args[2].equals("ai")) {
+            agent = new Ai();
+        } else {
+            exitWrongArgs();
+            return;
+        }
+        (new ConnectThree(gamename, agentcolor, agent)).play();
         System.out.println();
     }
 
     private static void exitWrongArgs() {
         System.out.println("Command line arguments are not valid.");
-        System.out.println("Start the program with \"Ternary <gamename> <b|w>\"");
+        System.out.println("Start the program with \"Ternary <gamename> <b|w> <human|ai>\"");
         System.exit(1);
     }
 }
