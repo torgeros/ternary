@@ -16,6 +16,7 @@ public class Human implements Agent {
         currentBoard = board;
     }
 
+    // TODO if this returns an invalid move, the program behaves unexpectedly and probably crashes
     public String getBestMove() {
         String move;
         Pattern pattern = Pattern.compile(String.format(
