@@ -10,15 +10,15 @@ public class Ternary {
         String gamename = args[0];
         PlayerColor agentcolor;
         if (args[1].equals("w")) {
-            agentcolor = PlayerColor.WHITE;
+            agentcolor = PlayerColor.WHITE_PLAYER;
         } else if (args[1].equals("b")) {
-            agentcolor = PlayerColor.BLACK;
+            agentcolor = PlayerColor.BLACK_PLAYER;
         } else {
             exitWrongArgs();
             return;
         }
-        System.out.println("===========================================");
-        System.out.printf("Starting game %s as color %s%n", gamename, agentcolor);
+        (new ConnectThree(gamename, agentcolor)).play();
+        System.out.println();
     }
 
     private static void exitWrongArgs() {
