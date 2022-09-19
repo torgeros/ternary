@@ -50,7 +50,12 @@ public class ConnectThree {
 
         while (!board.isTerminal()) {
             agent.updateInternalBoard(board);
-            processMove(ownColor, agent.getBestMove());
+            boolean moveValid;
+            do {
+                String move = agent.getBestMove();
+                moveValid = processMove(ownColor, move);
+                client.makeMove(move); //TODO implement this
+            } while (!moveValid);
             board.print();
         }
     }
