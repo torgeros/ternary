@@ -13,10 +13,10 @@
                 "${workspaceFolder}"
             ],
             "sourcePaths": [
-                "${workspaceFolder}/src"
+                "${workspaceFolder}/src/"
             ],
             "preLaunchTask": "build",
-            "args": "torgestestgame w human"
+            "args": "torgestestgame w ai"
         }
     ]
 }

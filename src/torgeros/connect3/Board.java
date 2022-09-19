@@ -49,6 +49,10 @@ public class Board {
         return Field.EMPTY;
     }
 
+    public Field[][] getCopyOfBoard() {
+        return board.clone();
+    }
+
     public void set(int x, int y, Field value) {
         board[x-1][y-1] = value;
     }

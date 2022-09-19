@@ -24,7 +24,7 @@ public class Ternary {
         if (args[2].equals("human")) {
             agent = new Human();
         } else if (args[2].equals("ai")) {
-            agent = new Ai();
+            agent = new Ai(agentcolor);
         } else {
             exitWrongArgs();
             return;
