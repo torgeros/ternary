@@ -20,12 +20,12 @@ public class Human implements Agent {
     public String getBestMove() {
         String move;
         Pattern pattern = Pattern.compile(String.format(
-                "^[1-%d][1-%d][NSEW]$", currentBoard.width, currentBoard.height
+                "^[1-%d][1-%d][NESWnesw]$", currentBoard.width, currentBoard.height
                 ));
         do {
             System.out.print("put in your best move (<x><y><direction>): ");
             move = scanner.nextLine();
         } while (!pattern.matcher(move).find());
-        return move;
+        return move.toUpperCase();
     }
 }

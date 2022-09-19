@@ -70,10 +70,10 @@ public class Board {
                 if (f == get(x, y+1) && f == get(x, y+2)) {
                     return true;
                 }
-                if (f == getFromInfitite(x+1, y+1) && f == get(x+2, y+2)) {
+                if (f == getFromInfitite(x+1, y+1) && f == getFromInfitite(x+2, y+2)) {
                     return true;
                 }
-                if (f == getFromInfitite(x-1, y+1) && f == get(x-2, y+2)) {
+                if (f == getFromInfitite(x-1, y+1) && f == getFromInfitite(x-2, y+2)) {
                     return true;
                 }
             }
