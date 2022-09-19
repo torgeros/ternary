@@ -27,6 +27,7 @@ public class ConnectThree {
     private Board board;
     private Agent agent;
     final private PlayerColor ownColor;
+    final private PlayerColor opponentColor;
     private GameClient client;
 
     public ConnectThree(String gamename, PlayerColor color, Agent agent) {
@@ -36,6 +37,7 @@ public class ConnectThree {
         board = new Board(5, 4);
         this.agent = agent;
         this.ownColor = color;
+        this.opponentColor = color == PlayerColor.WHITE_PLAYER ? PlayerColor.BLACK_PLAYER : PlayerColor.WHITE_PLAYER;
 
         client = new GameClient(gamename, color.getClientName());
     }
@@ -43,19 +45,38 @@ public class ConnectThree {
     public void play() {
         setBoardStartPosition();
         board.print();
-        processMove(PlayerColor.BLACK_PLAYER, "14E");
-        board.print();
 
         client.connect();
 
+        if (ownColor == PlayerColor.BLACK_PLAYER) {
+            // if we start as black, we have to wait for one move.
+            String move = client.getOpponentMove();
+            // move is considered to be valid as it has passed through the server
+            processMove(opponentColor, move);
+            board.print();
+        }
+
         while (!board.isTerminal()) {
+            // update agent data
             agent.updateInternalBoard(board);
+            // ask agent to create a move
+            String move;
             boolean moveValid;
             do {
-                String move = agent.getBestMove();
+                move = agent.getBestMove();
                 moveValid = processMove(ownColor, move);
-                client.makeMove(move); //TODO implement this
             } while (!moveValid);
+            // send the move to the client
+            client.makeMove(move);
+            // update the UI
+            board.print();
+            // get opponents move
+            System.out.println("waiting for opponents move");
+            boolean opMoveCoorect = processMove(opponentColor, client.getOpponentMove());
+            if (!opMoveCoorect) {
+                System.err.println("Opponents move was incorrect.");
+            }
+            // update the UI
             board.print();
         }
     }
@@ -76,6 +97,12 @@ public class ConnectThree {
         board.set(5, 3, Field.BLACK);
     }
 
+    /**
+     * If the return value is false, the board object has not been modified.
+     * @param player WHITE_PLAYER or BLACK_PLAYER
+     * @param cmd a move in the syntax "<x><y><dir>"
+     * @return true if move was valid and has been executed
+     */
     private boolean processMove(PlayerColor player, String cmd) {
         int x = cmd.charAt(0) - '0';
         int y = cmd.charAt(1) - '0';
