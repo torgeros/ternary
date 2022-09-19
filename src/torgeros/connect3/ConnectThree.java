@@ -56,7 +56,7 @@ public class ConnectThree {
             board.print();
         }
 
-        while (!board.isTerminal()) {
+        while (true) {
             // update agent data
             agent.updateInternalBoard(board);
             // ask agent to create a move
@@ -70,6 +70,10 @@ public class ConnectThree {
             client.makeMove(move);
             // update the UI
             board.print();
+            if (board.isTerminal()) {
+                System.out.println("you win.");
+                break;
+            }
             // get opponents move
             System.out.println("waiting for opponents move");
             boolean opMoveCoorect = processMove(opponentColor, client.getOpponentMove());
@@ -78,6 +82,10 @@ public class ConnectThree {
             }
             // update the UI
             board.print();
+            if (board.isTerminal()) {
+                System.out.println("oponnent wins.");
+                break;
+            }
         }
     }
 
