@@ -9,10 +9,9 @@ public class EvaluatableAi extends Ai {
     int sumOfProcessingTime = 0;
     int numberOfMoves = 0; // number of own moves
 
-    public EvaluatableAi(PlayerColor ownColor, int searchDepth) {
+    public EvaluatableAi(PlayerColor ownColor) {
         super(ownColor);
-        super.MAX_SEARCH_DEPTH = searchDepth;
-        System.out.printf("Started Evaluatable AI with search depth %d.%n", searchDepth);
+        System.out.printf("Started Evaluatable AI.%n");
     }
 
     @Override

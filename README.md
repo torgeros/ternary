@@ -11,10 +11,10 @@ First, compile the program by running
 Then, start the program by running
 
 ```bash
-java torgeros.connect3.Ternary <gamename> <b|w> <human|ai|eval<DEPTH>>
+java torgeros.connect3.Ternary <gamename> <b|w> <human|ai|eval>
 ```
 
-The `eval<DEPTH>` is used to stop the processing times and report stats at the end of each move. In the backend, `eval` itself starts an `ai` agent.
+The `eval` mode returns stats after each move. In the backend, `eval` itself starts an `ai` agent.
 
 As a `human` agent you must not enter an inavlid move, they are only checked for syntax, not for correctness!
 

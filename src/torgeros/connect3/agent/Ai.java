@@ -15,7 +15,20 @@ public class Ai implements Agent {
     final Field maximizingColor; // own color
     final Field minimizingColor; // opponents color
 
-    protected int MAX_SEARCH_DEPTH = 3; // search depth
+    /**
+     * depth for first iteration.
+     * Has to be a range for which any initial state takes less than START_OF_CUTOFF_MS to completely expand.
+     */
+    protected int START_SEARCH_DEPTH = 9;
+
+    /**
+     * time in milliseconds at which predicting is stopped.
+     * - ping to server is ~.15 ms.
+     * - sucessfully topping everything once the timer ha run out: eval gives ~1 ms.
+     */
+    protected int START_OF_CUTOFF_MS = 9900;
+
+    long startOfCurrentOperationTimestamp;
 
     public Ai(PlayerColor ownColor) {
         if (ownColor == PlayerColor.WHITE_PLAYER) {
@@ -34,15 +47,43 @@ public class Ai implements Agent {
         boardHeight = board.height;
     }
 
+    /**
+     * Perform minimax with alphabeta pruning for all the current node/board.
+     * All children of the board are evaluated.
+     * The "splitting" in subtrees or each child makes it easy to get the actual node out and not just the value/rating of the node.
+     * @return the best of move in the defiend syntax
+     */
     public String getBestMove() {
+        startOfCurrentOperationTimestamp = System.currentTimeMillis();
+
         int bestScore = Integer.MIN_VALUE;
         Field[][] bestNode = null;
-        for (Field[][] child : getChildren(currentBoard, maximizingColor)) {
-            int score = minimax(child, MAX_SEARCH_DEPTH - 1, Integer.MIN_VALUE, Integer.MAX_VALUE, false);
-            if (bestScore < score) {
-                bestScore = score;
-                bestNode = child;
+
+        // start iterative deepening
+        for (int depth = START_SEARCH_DEPTH; ; depth++) {
+            Field[][] bestNodeForThisDepth = null;
+            
+            // maximizing section of minimax:
+            int value = Integer.MIN_VALUE;
+            int alpha = Integer.MIN_VALUE;
+            for (Field[][] child : getChildren(currentBoard, maximizingColor)) {
+                //rewritten max
+                int mm = minimax(child, depth - 1, alpha, Integer.MAX_VALUE, false);
+                if (shouldStop()) {
+                    break;
+                }
+                if (mm > value) {
+                    value = mm;
+                    bestNodeForThisDepth = child;
+                }
+                alpha = Integer.max(alpha, value);
             }
+            if (shouldStop()) {
+                break;
+            }
+
+            //if the search was able to complete, overwrite bestNode
+            bestNode = bestNodeForThisDepth;
         }
         if (bestNode == null) {
             System.err.println("no move found. halting");
@@ -60,6 +101,9 @@ public class Ai implements Agent {
      * the higher the return value, the better for this agent.
      */
     protected int minimax(Field[][] node, int depth, int alpha, int beta, boolean maximizingPlayer) {
+        if (shouldStop()) {
+            return 0;
+        }
         if (depth == 0 || isTerminal(node)) {
             return heuristic(node);
         }
@@ -85,6 +129,10 @@ public class Ai implements Agent {
             }
             return value;
         }
+    }
+
+    protected boolean shouldStop() {
+        return (System.currentTimeMillis() - startOfCurrentOperationTimestamp) > START_OF_CUTOFF_MS;
     }
 
     protected String getMoveFromDiff(final Field[][] current, final Field[][] next) {
