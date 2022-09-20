@@ -33,8 +33,22 @@ public class Ai implements Agent {
     }
 
     public String getBestMove() {
-        minimax(currentBoard, 2, true);
-        return "";
+        int bestScore = Integer.MIN_VALUE;
+        Field[][] bestNode = null;
+        for (Field[][] child : getChildren(currentBoard, maximizingColor)) {
+            int score = minimax(child, 2, false);
+            if (bestScore < score) {
+                bestScore = score;
+                bestNode = child;
+            }
+        }
+        if (bestNode == null) {
+            System.err.println("no move found. halting");
+            while(true);
+        }
+        String move = getMoveFromDiff(currentBoard, bestNode);
+        System.out.printf("got minimax move %s%n", move);
+        return move;
     }
 
     /**
@@ -64,9 +78,42 @@ public class Ai implements Agent {
         return 0;
     }
 
+    private String getMoveFromDiff(final Field[][] current, final Field[][] next) {
+        int oldX = -1;
+        int oldY = -1;
+        int newX = -1;
+        int newY = -1;
+        for (int y = 0; y < boardHeight; y++) {
+            for (int x = 0; x < boardWidth; x++) {
+                if (current[x][y] != Field.EMPTY && next[x][y] == Field.EMPTY) {
+                    // x,y is the field that stone moved away from
+                    oldX = x;
+                    oldY = y;
+                }
+                if (next[x][y] != Field.EMPTY && current[x][y] == Field.EMPTY) {
+                    // x,y is the new field
+                    newX = x;
+                    newY = y;
+                }
+            }
+        }
+        if (newX == oldX) {
+            if (newY > oldY) {
+                return String.format("%d%dS", oldX+1, oldY+1);
+            } else {
+                return String.format("%d%dN", oldX+1, oldY+1);
+            }
+        } else {
+            if (newX > oldX) {
+                return String.format("%d%dE", oldX+1, oldY+1);
+            } else {
+                return String.format("%d%dW", oldX+1, oldY+1);
+            }
+        }
+    }
+
     private ArrayList<Field[][]> getChildren(final Field[][] node, final Field movableColor) {
         ArrayList<Field[][]> list = new ArrayList<Field[][]>();
-        System.out.printf("started getChildren for %s%n", movableColor.toString());
         for (int y = 0; y < boardHeight; y++) {
             for (int x = 0; x < boardWidth; x++) {
                 if (node[x][y] != movableColor) {
@@ -84,7 +131,6 @@ public class Ai implements Agent {
                     Field[][] child = Util.copyFieldArray(node);
                     child[x][y] = Field.EMPTY;
                     child[x-1][y] = movableColor;
-                    System.out.printf("added move W for %d %d that is %s%n", x, y, node[x][y].toString());
                     list.add(child);
                 }
                 //EAST
@@ -92,7 +138,6 @@ public class Ai implements Agent {
                     Field[][] child = Util.copyFieldArray(node);
                     child[x][y] = Field.EMPTY;
                     child[x+1][y] = movableColor;
-                    System.out.printf("added move E for %d %d that is %s%n", x, y, node[x][y].toString());
                     list.add(child);
                 }
                 //NORTH
@@ -100,7 +145,6 @@ public class Ai implements Agent {
                     Field[][] child = Util.copyFieldArray(node);
                     child[x][y] = Field.EMPTY;
                     child[x][y-1] = movableColor;
-                    System.out.printf("added move N for %d %d that is %s%n", x, y, node[x][y].toString());
                     list.add(child);
                 }
                 //SOUTH
@@ -108,12 +152,10 @@ public class Ai implements Agent {
                     Field[][] child = Util.copyFieldArray(node);
                     child[x][y] = Field.EMPTY;
                     child[x][y+1] = movableColor;
-                    System.out.printf("added move S for %d %d that is %s%n", x, y, node[x][y].toString());
                     list.add(child);
                 }
             }
         }
-        System.out.printf("generated list of possible moves: %d entries%n", list.size());
         return list;
     }
 
