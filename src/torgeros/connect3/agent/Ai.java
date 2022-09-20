@@ -12,8 +12,8 @@ public class Ai implements Agent {
     int boardWidth;
     int boardHeight;
 
-    final Field maximizingColor;
-    final Field minimizingColor;
+    final Field maximizingColor; // own color
+    final Field minimizingColor; // opponents color
 
     public Ai(PlayerColor ownColor) {
         if (ownColor == PlayerColor.WHITE_PLAYER) {
@@ -53,6 +53,8 @@ public class Ai implements Agent {
 
     /**
      * https://en.wikipedia.org/wiki/Minimax#Pseudocode
+     * MAX player always is this agent. The opponent is MIN.
+     * the higher the return value, the better for this agent.
      */
     private int minimax(Field[][] node, int depth, boolean maximizingPlayer) {
         if (depth == 0 || isTerminal(node)) {
@@ -72,10 +74,6 @@ public class Ai implements Agent {
             }
             return value;
         }
-    }
-
-    private int heuristic(Field[][] node) {
-        return 0;
     }
 
     private String getMoveFromDiff(final Field[][] current, final Field[][] next) {
@@ -159,7 +157,11 @@ public class Ai implements Agent {
         return list;
     }
 
-    private boolean isTerminal(Field[][] node) {
+    private boolean isTerminal(final Field[][] node) {
+        return getWinner(node) != Field.EMPTY;
+    }
+
+    private Field getWinner(final Field[][] node) {
         //vertical
         //diagonal \
         //diagonal /
@@ -169,19 +171,19 @@ public class Ai implements Agent {
                     continue;
                 }
                 if (node[x][y] == node[x][y+1] && node[x][y] == node[x][y+2]) {
-                    return true;
+                    return node[x][y];
                 }
                 if (x+2 < boardWidth
                         // x+2 < width means index x+2 is within the array
                         && node[x][y] == node[x+1][y+1]
                         && node[x][y] == node[x+2][y+2]) {
-                    return true;
+                            return node[x][y];
                 }
                 if (x-2 > 0
                         // x-2 > 0 means index x-2 is within the array
                         && node[x][y] == node[x-1][y+1]
                         && node[x][y] == node[x-2][y+2]) {
-                    return true;
+                            return node[x][y];
                 }
             }
         }
@@ -193,10 +195,56 @@ public class Ai implements Agent {
                     continue;
                 }
                 if (node[x][y] == node[x+1][y] && node[x][y] == node[x+2][y]) {
-                    return true;
+                    return node[x][y];
                 }
             }
         }
-        return false;
+        return Field.EMPTY;
+    }
+
+    private int heuristic(final Field[][] node) {
+        // find rows of three
+        Field potentialWinner = getWinner(node);
+        if (potentialWinner == maximizingColor) {
+            return 1000; // best rating
+        }
+        if (potentialWinner == minimizingColor) {
+            return -1000; // worst rating
+        }
+        // find rows of two
+        int rating = 0; // MAX's runs of two - MIN's runs of 2
+        //vertical
+        //diagonal \
+        //diagonal /
+        for (int y = 0; y < boardHeight - 1; y++) {
+            for (int x = 0; x < boardWidth; x++) {
+                if (node[x][y] == Field.EMPTY) {
+                    continue;
+                }
+                if (node[x][y] == node[x][y+1]) {
+                    //found one: if max-run: add 1, else subtract 1
+                    rating += node[x][y] == maximizingColor ? 1 : -1;
+                }
+                if (x+1 < boardWidth && node[x][y] == node[x+1][y+1]) {
+                    rating += node[x][y] == maximizingColor ? 1 : -1;
+                }
+                if (x-1 > 0 && node[x][y] == node[x-1][y+1]) {
+                    rating += node[x][y] == maximizingColor ? 1 : -1;
+                }
+            }
+        }
+
+        //horizontal
+        for (int y = 0; y < boardHeight; y++) {
+            for (int x = 0; x < boardWidth - 1; x++) {
+                if (node[x][y] == Field.EMPTY) {
+                    continue;
+                }
+                if (node[x][y] == node[x+1][y]) {
+                    rating += node[x][y] == maximizingColor ? 1 : -1;
+                }
+            }
+        }
+        return rating;
     }
 }
