@@ -23,7 +23,7 @@ public class EvaluatableAi extends Ai {
         numberOfMoves++;
         sumOfProcessingTime += stopTimestamp-startTimestamp;
 
-        System.out.printf("average processing time foe every move up until now was %d ms.%n", sumOfProcessingTime / numberOfMoves);
+        System.out.printf("average processing time for every move up until now was %d ms.%n", sumOfProcessingTime / numberOfMoves);
         return move;
     }
 }
