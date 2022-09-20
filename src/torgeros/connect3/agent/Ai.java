@@ -38,7 +38,7 @@ public class Ai implements Agent {
         int bestScore = Integer.MIN_VALUE;
         Field[][] bestNode = null;
         for (Field[][] child : getChildren(currentBoard, maximizingColor)) {
-            int score = minimax(child, MAX_SEARCH_DEPTH - 1, false);
+            int score = minimax(child, MAX_SEARCH_DEPTH - 1, Integer.MIN_VALUE, Integer.MAX_VALUE, false);
             if (bestScore < score) {
                 bestScore = score;
                 bestNode = child;
@@ -55,10 +55,11 @@ public class Ai implements Agent {
 
     /**
      * https://en.wikipedia.org/wiki/Minimax#Pseudocode
+     * https://en.wikipedia.org/wiki/Alpha%E2%80%93beta_pruning#Pseudocode (soft-fail)
      * MAX player always is this agent. The opponent is MIN.
      * the higher the return value, the better for this agent.
      */
-    protected int minimax(Field[][] node, int depth, boolean maximizingPlayer) {
+    protected int minimax(Field[][] node, int depth, int alpha, int beta, boolean maximizingPlayer) {
         if (depth == 0 || isTerminal(node)) {
             return heuristic(node);
         }
@@ -66,13 +67,21 @@ public class Ai implements Agent {
         if (maximizingPlayer) {
             value = Integer.MIN_VALUE;
             for (Field[][] child : getChildren(node, maximizingColor)) {
-                value = Integer.max(value, minimax(child, depth - 1, false));
+                value = Integer.max(value, minimax(child, depth - 1, alpha, beta, false));
+                alpha = Integer.max(alpha, value);
+                if (value >= beta) {
+                    break;
+                }
             }
             return value;
         } else {
             value = Integer.MAX_VALUE;
             for (Field[][] child : getChildren(node, minimizingColor)) {
-                value = Integer.min(value, minimax(child, depth - 1, true));
+                value = Integer.min(value, minimax(child, depth - 1, alpha, beta, true));
+                beta = Integer.min(beta, value);
+                if (value <= alpha) {
+                    break;
+                }
             }
             return value;
         }
