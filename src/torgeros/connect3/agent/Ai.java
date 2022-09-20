@@ -15,6 +15,8 @@ public class Ai implements Agent {
     final Field maximizingColor; // own color
     final Field minimizingColor; // opponents color
 
+    protected int MAX_SEARCH_DEPTH = 3; // search depth
+
     public Ai(PlayerColor ownColor) {
         if (ownColor == PlayerColor.WHITE_PLAYER) {
             maximizingColor = Field.WHITE;
@@ -36,7 +38,7 @@ public class Ai implements Agent {
         int bestScore = Integer.MIN_VALUE;
         Field[][] bestNode = null;
         for (Field[][] child : getChildren(currentBoard, maximizingColor)) {
-            int score = minimax(child, 2, false);
+            int score = minimax(child, MAX_SEARCH_DEPTH - 1, false);
             if (bestScore < score) {
                 bestScore = score;
                 bestNode = child;
@@ -56,7 +58,7 @@ public class Ai implements Agent {
      * MAX player always is this agent. The opponent is MIN.
      * the higher the return value, the better for this agent.
      */
-    private int minimax(Field[][] node, int depth, boolean maximizingPlayer) {
+    protected int minimax(Field[][] node, int depth, boolean maximizingPlayer) {
         if (depth == 0 || isTerminal(node)) {
             return heuristic(node);
         }
@@ -76,7 +78,7 @@ public class Ai implements Agent {
         }
     }
 
-    private String getMoveFromDiff(final Field[][] current, final Field[][] next) {
+    protected String getMoveFromDiff(final Field[][] current, final Field[][] next) {
         int oldX = -1;
         int oldY = -1;
         int newX = -1;
@@ -110,7 +112,7 @@ public class Ai implements Agent {
         }
     }
 
-    private ArrayList<Field[][]> getChildren(final Field[][] node, final Field movableColor) {
+    protected ArrayList<Field[][]> getChildren(final Field[][] node, final Field movableColor) {
         ArrayList<Field[][]> list = new ArrayList<Field[][]>();
         for (int y = 0; y < boardHeight; y++) {
             for (int x = 0; x < boardWidth; x++) {
@@ -157,11 +159,11 @@ public class Ai implements Agent {
         return list;
     }
 
-    private boolean isTerminal(final Field[][] node) {
+    protected boolean isTerminal(final Field[][] node) {
         return getWinner(node) != Field.EMPTY;
     }
 
-    private Field getWinner(final Field[][] node) {
+    protected Field getWinner(final Field[][] node) {
         //vertical
         //diagonal \
         //diagonal /
@@ -202,7 +204,7 @@ public class Ai implements Agent {
         return Field.EMPTY;
     }
 
-    private int heuristic(final Field[][] node) {
+    protected int heuristic(final Field[][] node) {
         // find rows of three
         Field potentialWinner = getWinner(node);
         if (potentialWinner == maximizingColor) {

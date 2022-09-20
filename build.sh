@@ -8,6 +8,7 @@ sourcefiles=(
     src/torgeros/connect3/agent/Agent.java
     src/torgeros/connect3/agent/Human.java
     src/torgeros/connect3/agent/Ai.java
+    src/torgeros/connect3/agent/EvaluatableAi.java
     src/torgeros/connect3/Util.java
 )
 
