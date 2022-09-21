@@ -63,7 +63,12 @@ public class GameClient {
     public String getOpponentMove() {
         // game is considered to be connected
         try {
-            return reader.readLine();
+            String input = reader.readLine();
+            if (input.startsWith("Timeout")) {
+                System.err.println("Server timeout trigerred, halting.");
+                while (true);
+            }
+            return input;
         } catch (IOException ex) {
             ex.printStackTrace();
             System.err.println("halting");
