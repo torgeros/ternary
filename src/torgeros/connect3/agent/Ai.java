@@ -69,19 +69,25 @@ public class Ai implements Agent {
         for (int depth = START_SEARCH_DEPTH; ; depth++) {
             Field[][] bestNodeForThisDepth = null;
             
-            // maximizing section of minimax:
+            /*
+            rewritten max part of minimax,
+            for getting the node instead of its value.
+            This includes alpha-pruning (beta is irrelevant because we are maxing)
+            */
             int value = Integer.MIN_VALUE;
             int alpha = Integer.MIN_VALUE;
             for (Field[][] child : getChildren(currentBoard, maximizingColor)) {
-                //rewritten max
                 int mm = minimax(child, depth - 1, alpha, Integer.MAX_VALUE, false);
                 if (shouldStop()) {
                     break;
                 }
                 if (mm > value) {
+                    // if current child is better than best known: replace.
                     value = mm;
                     bestNodeForThisDepth = child;
                     if (value >= SCORE_SURE_WIN) {
+                        // SCORE_SURE_WIN is a MAX-winning leaf node.
+                        // if we definitely win on this node, we can skip the rest
                         break;
                     }
                 }
@@ -94,6 +100,8 @@ public class Ai implements Agent {
             //if the search was able to complete, overwrite bestNode
             bestNode = bestNodeForThisDepth;
             if (value >= SCORE_SURE_WIN) {
+                // SCORE_SURE_WIN is a MAX-winning leaf node.
+                // if we definitely win on this node, we can skip the rest
                 break;
             }
         }
