@@ -83,7 +83,7 @@ public class ConnectThree {
             // update the UI
             board.print();
             if (board.isTerminal()) {
-                System.out.println("oponnent wins.");
+                System.out.println("opponent wins.");
                 break;
             }
         }
