@@ -28,12 +28,6 @@ public class Ai implements Agent {
      */
     protected int START_OF_CUTOFF_MS = 9900;
 
-    /**
-     * the score for a definite win.
-     * This is used to permaturely break from the current.children loop.
-     */
-    protected int SCORE_SURE_WIN = 1000;
-
     long startOfCurrentOperationTimestamp;
 
     public Ai(PlayerColor ownColor) {
@@ -85,11 +79,6 @@ public class Ai implements Agent {
                     // if current child is better than best known: replace.
                     value = mm;
                     bestNodeForThisDepth = child;
-                    if (value >= SCORE_SURE_WIN) {
-                        // SCORE_SURE_WIN is a MAX-winning leaf node.
-                        // if we definitely win on this node, we can skip the rest
-                        break;
-                    }
                 }
                 alpha = Integer.max(alpha, value);
             }
@@ -99,11 +88,6 @@ public class Ai implements Agent {
 
             //if the search was able to complete, overwrite bestNode
             bestNode = bestNodeForThisDepth;
-            if (value >= SCORE_SURE_WIN) {
-                // SCORE_SURE_WIN is a MAX-winning leaf node.
-                // if we definitely win on this node, we can skip the rest
-                break;
-            }
         }
         if (bestNode == null) {
             System.err.println("no move found. halting");
@@ -285,10 +269,10 @@ public class Ai implements Agent {
         // find rows of three
         Field potentialWinner = getWinner(node);
         if (potentialWinner == maximizingColor) {
-            return SCORE_SURE_WIN; // best rating
+            return 1000; // best rating
         }
         if (potentialWinner == minimizingColor) {
-            return -SCORE_SURE_WIN; // worst rating
+            return -1000; // worst rating
         }
         // find rows of two
         int rating = 0; // MAX's runs of two - MIN's runs of 2
