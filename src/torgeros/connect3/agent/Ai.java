@@ -298,8 +298,8 @@ public class Ai implements Agent {
         }
         int rating = 0;
         /*
-        we are looping from 2 to len+2 excl., i.e. the whole original board.
-        the code is checking lots of ?-null-null runs, but that saves us a lot of branching and reiteration.
+        looping from 2 to len+2 exclusive, i.e. every field of the original board.
+        the code is checking lots of ?-null-null runs, but that saves a lot of branching and reiteration.
         furthermore, most of the ?-null-null runs are skipped because they are EMPTY-null-null
         */
         for (int y = 2; y < boardHeight + 2; y++) {
