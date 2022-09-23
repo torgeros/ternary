@@ -19,23 +19,10 @@ public class Board {
     public final int width;
     public final int height;
 
-    private String formatTableTop;
-    private String formatTableBottom;
-
     public Board(int width, int height) {
         this.width = width;
         this.height = height;
         board = new Field[width][height];
-
-        // compile format strings for pretty print()
-        formatTableTop = "┌";
-        formatTableBottom = "└";
-        for (int x = 0; x < width * 2 + 1; x++) {
-            formatTableTop += "-";
-            formatTableBottom += "-";
-        }
-        formatTableTop += "┐";
-        formatTableBottom += "┘";
     }
 
     public Field get(int x, int y) {
@@ -99,10 +86,26 @@ public class Board {
     }
 
     public void print() {
+        printFieldArray(board);
+    }
+
+    public static void printFieldArray(Field[][] board) {
+        String formatTableTop;
+        String formatTableBottom;
+
+        // compile format strings for pretty print()
+        formatTableTop = "┌";
+        formatTableBottom = "└";
+        for (int x = 0; x < board.length * 2 + 1; x++) {
+            formatTableTop += "-";
+            formatTableBottom += "-";
+        }
+        formatTableTop += "┐";
+        formatTableBottom += "┘";
         String result = String.format("%s%n", formatTableTop);
-        for (int y = 0; y < height; y++) {
+        for (int y = 0; y < board[0].length; y++) {
             String line = "|";
-            for (int x = 0; x < width; x++) {
+            for (int x = 0; x < board.length; x++) {
                 line += " " + board[x][y].getChar();
             }
             result += String.format("%s |%n", line);
