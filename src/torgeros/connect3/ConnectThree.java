@@ -30,11 +30,11 @@ public class ConnectThree {
     final private PlayerColor opponentColor;
     private GameClient client;
 
-    public ConnectThree(String gamename, PlayerColor color, Agent agent) {
+    public ConnectThree(String gamename, PlayerColor color, Agent agent, boolean largegrid) {
         System.out.println("===========================================");
         System.out.printf("Starting game %s as color %s%n", gamename, color);
         System.out.printf("Game Representation: WHITE %c, BLACK %c%n", Field.WHITE.getChar(), Field.BLACK.getChar());
-        board = new Board(5, 4);
+        board = largegrid ? new Board(7, 6) : new Board(5, 4);
         this.agent = agent;
         this.ownColor = color;
         this.opponentColor = color == PlayerColor.WHITE_PLAYER ? PlayerColor.BLACK_PLAYER : PlayerColor.WHITE_PLAYER;
@@ -95,14 +95,16 @@ public class ConnectThree {
                 board.set(x, y, Field.EMPTY);
             }
         }
-        board.set(1, 1, Field.WHITE);
-        board.set(1, 3, Field.WHITE);
-        board.set(5, 2, Field.WHITE);
-        board.set(5, 4, Field.WHITE);
-        board.set(1, 2, Field.BLACK);
-        board.set(1, 4, Field.BLACK);
-        board.set(5, 1, Field.BLACK);
-        board.set(5, 3, Field.BLACK);
+        int offsetX = (board.width - 5) / 2;
+        int offsetY = (board.height - 4) / 2;
+        board.set(offsetX+1, offsetY+1, Field.WHITE);
+        board.set(offsetX+1, offsetY+2, Field.BLACK);
+        board.set(offsetX+1, offsetY+3, Field.WHITE);
+        board.set(offsetX+1, offsetY+4, Field.BLACK);
+        board.set(offsetX+5, offsetY+1, Field.BLACK);
+        board.set(offsetX+5, offsetY+2, Field.WHITE);
+        board.set(offsetX+5, offsetY+3, Field.BLACK);
+        board.set(offsetX+5, offsetY+4, Field.WHITE);
     }
 
     /**

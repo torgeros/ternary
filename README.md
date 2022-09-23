@@ -11,7 +11,7 @@ First, compile the program by running
 Then, start the program by running
 
 ```bash
-java torgeros.connect3.Ternary <gamename> <b|w> <human|ai|eval>
+java torgeros.connect3.Ternary <gamename> <b|w> <human|ai|eval> [large-grid]
 ```
 
 The `eval` mode returns stats after each move. In the backend, `eval` itself starts an `ai` agent.

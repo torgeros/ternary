@@ -8,7 +8,7 @@ import torgeros.connect3.agent.EvaluatableAi;
 
 public class Ternary {
     public static void main(String[] args) {
-        if (args.length != 3) {
+        if (args.length < 3) {
             exitWrongArgs();
         }
         String gamename = args[0];
@@ -32,13 +32,18 @@ public class Ternary {
             exitWrongArgs();
             return;
         }
-        (new ConnectThree(gamename, agentcolor, agent)).play();
+        boolean largegrid = false;
+        if (args.length > 3 && args[3].equals("large-grid")) {
+            largegrid = true;
+            System.out.println("activating large grid");
+        }
+        (new ConnectThree(gamename, agentcolor, agent, largegrid)).play();
         System.out.println();
     }
 
     private static void exitWrongArgs() {
         System.out.println("Command line arguments are not valid.");
-        System.out.println("Start the program with \"Ternary <gamename> <b|w> <human|ai|eval>\"");
+        System.out.println("Start the program with \"Ternary <gamename> <b|w> <human|ai|eval> [large-grid]\"");
         System.exit(1);
     }
 }
