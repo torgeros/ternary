@@ -76,7 +76,7 @@ public class Ai implements Agent {
         // start iterative deepening
         for (int depth = START_SEARCH_DEPTH; ; depth++) {
             Field[][] bestNodeForThisDepth = null;
-            
+
             /*
             rewritten max part of minimax,
             for getting the node instead of its value.
@@ -96,11 +96,12 @@ public class Ai implements Agent {
                 }
                 alpha = Integer.max(alpha, value);
             }
+
+            // if we ran out of time during the search, skip storing the best result
             if (shouldStop()) {
                 break;
             }
-
-            //if the search was able to complete, overwrite bestNode
+            // if the search at this depth was able to complete, overwrite bestNode
             bestNode = bestNodeForThisDepth;
         }
         if (bestNode == null) {
