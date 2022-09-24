@@ -14,6 +14,12 @@ public class Ai implements Agent {
 
     final Field maximizingColor; // own color
     final Field minimizingColor; // opponents color
+    /**
+     * initialized node for the heuristic to work with, to safe processing time.
+     * including the margin of two null-Fields as discussed in the heuristic method.
+     */
+    Field[][] nodeWithMargin;
+
 
     /**
      * depth for first iteration.
@@ -27,6 +33,13 @@ public class Ai implements Agent {
      * - sucessfully topping everything once the timer ha run out: eval gives ~1 ms.
      */
     protected int START_OF_CUTOFF_MS = 9900;
+
+    /**
+     * run of three: safe win: score 1000.
+     * run of two: good, score 50. Max number of 2-runs is 6 for a 2x2 square.
+     * positive score for max player, negative score for min player.
+     */
+    final int[] SCORE_FOR_RUNS = {0, 0, 50, 1000};
 
     long startOfCurrentOperationTimestamp;
 
@@ -45,6 +58,7 @@ public class Ai implements Agent {
         currentBoard = board.getCopyOfBoard();
         boardWidth = board.width;
         boardHeight = board.height;
+        nodeWithMargin = new Field[boardWidth + 4][boardHeight + 4];
     }
 
     /**
@@ -266,48 +280,49 @@ public class Ai implements Agent {
         }
         return Field.EMPTY;
     }
-
-    protected int heuristic(final Field[][] node) {
-        // find rows of three
-        Field potentialWinner = getWinner(node);
-        if (potentialWinner == maximizingColor) {
-            return 1000; // best rating
-        }
-        if (potentialWinner == minimizingColor) {
-            return -1000; // worst rating
-        }
-        // find rows of two
-        int rating = 0; // MAX's runs of two - MIN's runs of 2
-        //vertical
-        //diagonal \
-        //diagonal /
-        for (int y = 0; y < boardHeight - 1; y++) {
+    /**
+     * heuristic function for minimax
+     * 
+     * Concept:
+     * For each direction (vertical, horizontal, 2x diagonal):
+     * For every field check if there is xxx starting here: safe win
+     * For every field check if there is xx? or x?x (run of 2) starting here
+     * 
+     * @param input_node
+     */
+    protected int heuristic(final Field[][] input_node) {
+        //create node with margin 2, to be able to run checks with caring about board borders.
+        //margin is initialized with null, so checking with == is safe
+        for (int y = 0; y < boardHeight; y++) {
             for (int x = 0; x < boardWidth; x++) {
-                if (node[x][y] == Field.EMPTY) {
-                    continue;
-                }
-                if (node[x][y] == node[x][y+1]) {
-                    //found one: if max-run: add 1, else subtract 1
-                    rating += node[x][y] == maximizingColor ? 1 : -1;
-                }
-                if (x+1 < boardWidth && node[x][y] == node[x+1][y+1]) {
-                    rating += node[x][y] == maximizingColor ? 1 : -1;
-                }
-                if (x-1 > 0 && node[x][y] == node[x-1][y+1]) {
-                    rating += node[x][y] == maximizingColor ? 1 : -1;
-                }
+                nodeWithMargin[x+2][y+2] = input_node[x][y];
             }
         }
-
-        //horizontal
-        for (int y = 0; y < boardHeight; y++) {
-            for (int x = 0; x < boardWidth - 1; x++) {
-                if (node[x][y] == Field.EMPTY) {
+        int rating = 0;
+        /*
+        we are looping from 2 to len+2 excl., i.e. the whole original board.
+        the code is checking lots of ?-null-null runs, but that saves us a lot of branching and reiteration.
+        furthermore, most of the ?-null-null runs are skipped because they are EMPTY-null-null
+        */
+        for (int y = 2; y < boardHeight + 2; y++) {
+            for (int x = 2; x < boardWidth + 2; x++) {
+                if (nodeWithMargin[x][y] == Field.EMPTY) {
                     continue;
                 }
-                if (node[x][y] == node[x+1][y]) {
-                    rating += node[x][y] == maximizingColor ? 1 : -1;
-                }
+                int runLength; //count of stones in the interesting three fields
+                boolean isMaxPlayer = nodeWithMargin[x][y] == maximizingColor;
+                //vertical score
+                runLength = (nodeWithMargin[x][y] == nodeWithMargin[x][y+1]?1:0) + (nodeWithMargin[x][y] == nodeWithMargin[x][y+2]?1:0);
+                rating += isMaxPlayer ? SCORE_FOR_RUNS[runLength] : -SCORE_FOR_RUNS[runLength];
+                //diagonal \ score
+                runLength = (nodeWithMargin[x][y] == nodeWithMargin[x+1][y+1]?1:0) + (nodeWithMargin[x][y] == nodeWithMargin[x+2][y+2]?1:0);
+                rating += isMaxPlayer ? SCORE_FOR_RUNS[runLength] : -SCORE_FOR_RUNS[runLength];
+                //diagonal / score
+                runLength = (nodeWithMargin[x][y] == nodeWithMargin[x-1][y+1]?1:0) + (nodeWithMargin[x][y] == nodeWithMargin[x-2][y+2]?1:0);
+                rating += isMaxPlayer ? SCORE_FOR_RUNS[runLength] : -SCORE_FOR_RUNS[runLength];
+                //horizontal score
+                runLength = (nodeWithMargin[x][y] == nodeWithMargin[x+1][y]?1:0) + (nodeWithMargin[x][y] == nodeWithMargin[x+2][y]?1:0);
+                rating += isMaxPlayer ? SCORE_FOR_RUNS[runLength] : -SCORE_FOR_RUNS[runLength];
             }
         }
         return rating;
