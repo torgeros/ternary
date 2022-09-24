@@ -1,6 +1,7 @@
 package torgeros.connect3.agent;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import torgeros.connect3.ConnectThree.PlayerColor;
 import torgeros.connect3.Board;
@@ -11,6 +12,7 @@ public class Ai implements Agent {
     Field[][] currentBoard;
     int boardWidth;
     int boardHeight;
+    String serializedCurrentBoard;
 
     final Field maximizingColor; // own color
     final Field minimizingColor; // opponents color
@@ -50,6 +52,23 @@ public class Ai implements Agent {
 
     long startOfCurrentOperationTimestamp;
 
+    private static class BestChildNode {
+        public int searchedDepth;
+        public Field[][] node;
+        public int value;
+    }
+
+    /**
+     * keep tracks of the best child that has been discovered for a specific board(parent).
+     * key is a serialized board, see #serializeNode(node).
+     * value is a BestChildNode object
+     * 
+     * there is no need to be able to tell apart whether it is max's or min's turn.
+     * that information is implicitly contained in the hashstring.
+     * a bestChild can therefore be either "best" for max (high value) or for min (low value).
+     */
+    HashMap<String, BestChildNode> knownBestChildNodes;
+
     public Ai(PlayerColor ownColor) {
         if (ownColor == PlayerColor.WHITE_PLAYER) {
             maximizingColor = Field.WHITE;
@@ -58,6 +77,8 @@ public class Ai implements Agent {
             maximizingColor = Field.BLACK;
             minimizingColor = Field.WHITE;
         }
+
+        knownBestChildNodes = new HashMap<String, BestChildNode>();
         System.out.printf("created new AI that plays %s (%c)%n", ownColor.getClientName(), maximizingColor.getChar());
     }
 
@@ -65,6 +86,7 @@ public class Ai implements Agent {
         currentBoard = board.getCopyOfBoard();
         boardWidth = board.width;
         boardHeight = board.height;
+        serializedCurrentBoard = serializeNode(currentBoard);
         nodeWithMargin = new Field[boardWidth + 4][boardHeight + 4];
     }
 
@@ -77,11 +99,19 @@ public class Ai implements Agent {
     public String getBestMove() {
         startOfCurrentOperationTimestamp = System.currentTimeMillis();
 
-        int bestScore = Integer.MIN_VALUE;
+        int bestNodesValue = Integer.MIN_VALUE;
         Field[][] bestNode = null;
 
+        int depth;
+        // if we already know the best child for the current board, we can start searching where we left off.
+        if (knownBestChildNodes.containsKey(serializedCurrentBoard)) {
+            depth = knownBestChildNodes.get(serializedCurrentBoard).searchedDepth + 1;
+            System.out.printf("we have been in this state before, starting search at depth %d.%n", depth);
+        } else {
+            depth = START_SEARCH_DEPTH;
+        }
         // start iterative deepening
-        for (int depth = START_SEARCH_DEPTH; ; depth++) {
+        for ( ; ; depth++) {
             Field[][] bestNodeForThisDepth = null;
 
             /*
@@ -89,19 +119,19 @@ public class Ai implements Agent {
             for getting the node instead of its value.
             This includes alpha-pruning (beta is irrelevant because we are maxing)
             */
-            int value = Integer.MIN_VALUE;
+            int bestValueForThisDepth = Integer.MIN_VALUE;
             int alpha = Integer.MIN_VALUE;
             for (Field[][] child : getChildren(currentBoard, maximizingColor)) {
                 int mm = minimax(child, depth - 1, alpha, Integer.MAX_VALUE, false);
                 if (shouldStop()) {
                     break;
                 }
-                if (mm > value) {
+                if (mm > bestValueForThisDepth) {
                     // if current child is better than best known: replace.
-                    value = mm;
+                    bestValueForThisDepth = mm;
                     bestNodeForThisDepth = child;
                 }
-                alpha = Integer.max(alpha, value);
+                alpha = Integer.max(alpha, bestValueForThisDepth);
             }
 
             // if we ran out of time during the search, skip storing the best result
@@ -110,14 +140,48 @@ public class Ai implements Agent {
             }
             // if the search at this depth was able to complete, overwrite bestNode
             bestNode = bestNodeForThisDepth;
+            bestNodesValue = bestValueForThisDepth;
         }
-        if (bestNode == null) {
-            System.err.println("no move found. halting");
-            while(true);
-        }
-        String move = getMoveFromDiff(currentBoard, bestNode);
+        // complete search was to depth-1
+        System.out.printf("completed search to depth %d.%n", depth-1);
+        updateBestKnownChild(serializedCurrentBoard, bestNode, depth-1, bestNodesValue);
+        String move = getMoveFromDiff(currentBoard, knownBestChildNodes.get(serializedCurrentBoard).node);
         System.out.printf("got minimax move %s%n", move);
         return move;
+    }
+
+    /**
+     * get the best child for the given parent, including provious knowledge (i.e. the history hashmap).
+     * the returned BestChildNode should be put/replaced in the history hashmap.
+     * value is not needed for children comparison, because deeper is always better.
+     * this method guarantees that there is an entry in knownBestChildNodes when it returns.
+     * @param serializedParent see #serializeNode()
+     * @param proposedBestChild 
+     * @param searchedDepth the depth where the proposedBestChild was found
+     * @param value the minimax value of proposedBestChild
+     * @return
+     */
+    protected void updateBestKnownChild(final String serializedParent, final Field[][] proposedBestChild, int searchedDepth, int value) {
+        if (knownBestChildNodes.containsKey(serializedParent)) {
+            if (searchedDepth > knownBestChildNodes.get(serializedParent).searchedDepth) {
+                // proposedBestChild is actually better/deeper than knownBest
+                BestChildNode newBest = new BestChildNode();
+                newBest.node = proposedBestChild;
+                newBest.value = value;
+                newBest.searchedDepth = searchedDepth;
+                knownBestChildNodes.replace(serializedParent, newBest);
+            } // else program failed to search deeper than known nodes
+        } else {
+            if (proposedBestChild == null) {
+                System.err.println("no child found. halting");
+                while(true);
+            }
+            BestChildNode newBest = new BestChildNode();
+            newBest.node = proposedBestChild;
+            newBest.value = value;
+            newBest.searchedDepth = searchedDepth;
+            knownBestChildNodes.put(serializedParent, newBest);
+        }
     }
 
     /**
@@ -130,29 +194,47 @@ public class Ai implements Agent {
         if (shouldStop()) {
             return 0;
         }
+        // if we already know this node at a deeper search level: use the known value
+        if (knownBestChildNodes.containsKey(serializeNode(node))) {
+            if (knownBestChildNodes.get(serializeNode(node)).searchedDepth >= depth) {
+                return knownBestChildNodes.get(serializeNode(node)).value;
+            }
+        }
         if (depth == 0 || isTerminal(node)) {
             return heuristic(node);
         }
         int value;
         if (maximizingPlayer) {
             value = Integer.MIN_VALUE;
+            Field[][] bestChild = null;
             for (Field[][] child : getChildren(node, maximizingColor)) {
-                value = Integer.max(value, minimax(child, depth - 1, alpha, beta, false));
+                int childValue = minimax(child, depth - 1, alpha, beta, false);
+                if (childValue > value) {
+                    value = childValue; // replacement for max function
+                    bestChild = child;
+                }
                 alpha = Integer.max(alpha, value);
                 if (value >= beta) {
                     break;
                 }
             }
+            updateBestKnownChild(serializeNode(node), bestChild, depth, value);
             return value;
         } else {
             value = Integer.MAX_VALUE;
+            Field[][] bestChild = null;
             for (Field[][] child : getChildren(node, minimizingColor)) {
-                value = Integer.min(value, minimax(child, depth - 1, alpha, beta, true));
+                int childValue = minimax(child, depth - 1, alpha, beta, true);
+                if (childValue < value) {
+                    value = childValue; // replacement for min function
+                    bestChild = child;
+                }
                 beta = Integer.min(beta, value);
                 if (value <= alpha) {
                     break;
                 }
             }
+            updateBestKnownChild(serializeNode(node), bestChild, depth, value);
             return value;
         }
     }
@@ -195,6 +277,9 @@ public class Ai implements Agent {
         }
     }
 
+    /**
+     * generates all children of a node. all children are new objects.
+     */
     protected ArrayList<Field[][]> getChildren(final Field[][] node, final Field movableColor) {
         ArrayList<Field[][]> list = new ArrayList<Field[][]>();
         for (int y = 0; y < boardHeight; y++) {
@@ -344,5 +429,15 @@ public class Ai implements Agent {
             }
         }
         return rating;
+    }
+
+    private String serializeNode(Field[][] node) {
+        String s = "";
+        for (int y = 0; y < boardHeight; y++) {
+            for (int x = 0; x < boardWidth; x++) {
+                s += node[x][y].getChar();
+            }
+        }
+        return s;
     }
 }
