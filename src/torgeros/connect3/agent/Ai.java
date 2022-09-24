@@ -103,8 +103,6 @@ public class Ai implements Agent {
             }
             // if the search at this depth was able to complete, overwrite bestNode
             bestNode = bestNodeForThisDepth;
-            System.out.printf("bestNode updated at depth %d to the following. value = %d%n", depth, value);
-            Board.printFieldArray(bestNode);
         }
         if (bestNode == null) {
             System.err.println("no move found. halting");
