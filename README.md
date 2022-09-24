@@ -22,4 +22,4 @@ As a `human` agent you must not enter an invalid move, they are only checked for
 
 In `human` mode moves can be entered as `"23e"` or `"23E"`.
 
-The `large-grid` flag enableds the 7x6 board (default 4x5).
+The optional `large-grid`-flag enableds the 7x6 board (default 4x5).
