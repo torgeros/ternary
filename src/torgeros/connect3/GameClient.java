@@ -64,6 +64,10 @@ public class GameClient {
         // game is considered to be connected
         try {
             String input = reader.readLine();
+            if (input == null) {
+                System.out.println("received empty line from server, halting.");
+                while(true);
+            }
             if (input.startsWith("Timeout")) {
                 System.err.println("Server timeout trigerred, halting.");
                 while (true);
