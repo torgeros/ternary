@@ -106,7 +106,11 @@ public class Board {
         for (int y = 0; y < board[0].length; y++) {
             String line = "|";
             for (int x = 0; x < board.length; x++) {
-                line += " " + board[x][y].getChar();
+                if (board[x][y] != null) {
+                    line += " " + board[x][y].getChar();
+                } else {
+                    line += " 0";
+                }
             }
             result += String.format("%s |%n", line);
         }
