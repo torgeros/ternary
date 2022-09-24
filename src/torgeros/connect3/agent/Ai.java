@@ -103,6 +103,8 @@ public class Ai implements Agent {
             }
             // if the search at this depth was able to complete, overwrite bestNode
             bestNode = bestNodeForThisDepth;
+            System.out.printf("bestNode updated at depth %d to the following. value = %d%n", depth, value);
+            Board.printFieldArray(bestNode);
         }
         if (bestNode == null) {
             System.err.println("no move found. halting");
@@ -311,16 +313,16 @@ public class Ai implements Agent {
                 int runLength; //count of stones in the interesting three fields
                 boolean isMaxPlayer = nodeWithMargin[x][y] == maximizingColor;
                 //vertical score
-                runLength = (nodeWithMargin[x][y] == nodeWithMargin[x][y+1]?1:0) + (nodeWithMargin[x][y] == nodeWithMargin[x][y+2]?1:0);
+                runLength = 1 + ((nodeWithMargin[x][y] == nodeWithMargin[x][y+1])?1:0) + ((nodeWithMargin[x][y] == nodeWithMargin[x][y+2])?1:0);
                 rating += isMaxPlayer ? SCORE_FOR_RUNS[runLength] : -SCORE_FOR_RUNS[runLength];
                 //diagonal \ score
-                runLength = (nodeWithMargin[x][y] == nodeWithMargin[x+1][y+1]?1:0) + (nodeWithMargin[x][y] == nodeWithMargin[x+2][y+2]?1:0);
+                runLength = 1 + ((nodeWithMargin[x][y] == nodeWithMargin[x+1][y+1])?1:0) + ((nodeWithMargin[x][y] == nodeWithMargin[x+2][y+2])?1:0);
                 rating += isMaxPlayer ? SCORE_FOR_RUNS[runLength] : -SCORE_FOR_RUNS[runLength];
                 //diagonal / score
-                runLength = (nodeWithMargin[x][y] == nodeWithMargin[x-1][y+1]?1:0) + (nodeWithMargin[x][y] == nodeWithMargin[x-2][y+2]?1:0);
+                runLength = 1 + ((nodeWithMargin[x][y] == nodeWithMargin[x-1][y+1])?1:0) + ((nodeWithMargin[x][y] == nodeWithMargin[x-2][y+2])?1:0);
                 rating += isMaxPlayer ? SCORE_FOR_RUNS[runLength] : -SCORE_FOR_RUNS[runLength];
                 //horizontal score
-                runLength = (nodeWithMargin[x][y] == nodeWithMargin[x+1][y]?1:0) + (nodeWithMargin[x][y] == nodeWithMargin[x+2][y]?1:0);
+                runLength = 1 + ((nodeWithMargin[x][y] == nodeWithMargin[x+1][y])?1:0) + ((nodeWithMargin[x][y] == nodeWithMargin[x+2][y])?1:0);
                 rating += isMaxPlayer ? SCORE_FOR_RUNS[runLength] : -SCORE_FOR_RUNS[runLength];
             }
         }
