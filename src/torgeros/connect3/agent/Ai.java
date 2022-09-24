@@ -35,11 +35,18 @@ public class Ai implements Agent {
     protected int START_OF_CUTOFF_MS = 9900;
 
     /**
-     * run of three: safe win: score 1000.
+     * score given (positive/negative) for a safe win.
+     * high enough to outnumber every other combination of scores.
+     * low enough to not overflow if if e.g. two wins occur at the same time (run of 4)
+     */
+    final int SCORE_SAFE_WIN = 0xFFFF;
+
+    /**
+     * run of three: safe win.
      * run of two: good, score 50. Max number of 2-runs is 6 for a 2x2 square.
      * positive score for max player, negative score for min player.
      */
-    final int[] SCORE_FOR_RUNS = {0, 0, 50, 1000};
+    final int[] SCORE_FOR_RUNS = {0, 0, 50, SCORE_SAFE_WIN};
 
     long startOfCurrentOperationTimestamp;
 
@@ -312,15 +319,27 @@ public class Ai implements Agent {
                 boolean isMaxPlayer = nodeWithMargin[x][y] == maximizingColor;
                 //vertical score
                 runLength = 1 + ((nodeWithMargin[x][y] == nodeWithMargin[x][y+1])?1:0) + ((nodeWithMargin[x][y] == nodeWithMargin[x][y+2])?1:0);
+                if (runLength == 3) {
+                    return isMaxPlayer ? SCORE_SAFE_WIN : -SCORE_SAFE_WIN;
+                }
                 rating += isMaxPlayer ? SCORE_FOR_RUNS[runLength] : -SCORE_FOR_RUNS[runLength];
                 //diagonal \ score
                 runLength = 1 + ((nodeWithMargin[x][y] == nodeWithMargin[x+1][y+1])?1:0) + ((nodeWithMargin[x][y] == nodeWithMargin[x+2][y+2])?1:0);
+                if (runLength == 3) {
+                    return isMaxPlayer ? SCORE_SAFE_WIN : -SCORE_SAFE_WIN;
+                }
                 rating += isMaxPlayer ? SCORE_FOR_RUNS[runLength] : -SCORE_FOR_RUNS[runLength];
                 //diagonal / score
                 runLength = 1 + ((nodeWithMargin[x][y] == nodeWithMargin[x-1][y+1])?1:0) + ((nodeWithMargin[x][y] == nodeWithMargin[x-2][y+2])?1:0);
+                if (runLength == 3) {
+                    return isMaxPlayer ? SCORE_SAFE_WIN : -SCORE_SAFE_WIN;
+                }
                 rating += isMaxPlayer ? SCORE_FOR_RUNS[runLength] : -SCORE_FOR_RUNS[runLength];
                 //horizontal score
                 runLength = 1 + ((nodeWithMargin[x][y] == nodeWithMargin[x+1][y])?1:0) + ((nodeWithMargin[x][y] == nodeWithMargin[x+2][y])?1:0);
+                if (runLength == 3) {
+                    return isMaxPlayer ? SCORE_SAFE_WIN : -SCORE_SAFE_WIN;
+                }
                 rating += isMaxPlayer ? SCORE_FOR_RUNS[runLength] : -SCORE_FOR_RUNS[runLength];
             }
         }
