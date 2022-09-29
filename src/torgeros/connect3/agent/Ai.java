@@ -27,6 +27,8 @@ public class Ai implements Agent {
     /**
      * depth for first iteration.
      * Has to be a range for which any initial state takes less than START_OF_CUTOFF_MS to completely expand.
+     * Is now fixed to 1 to make special cases of winning and losing in the near future acceptable.
+     * DO NOT CHANGE!
      */
     protected int START_SEARCH_DEPTH = 1;
 
