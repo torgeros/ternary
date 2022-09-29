@@ -249,13 +249,13 @@ public class Ai implements Agent {
         }
         // if this state leads to a direct draw, return utility of 0
         if (stateCounter.get(serializeNode(node)) == 3) {
+            System.out.println("TFD: found threefold draw at minimax call");
             return 0;
         }
         // if we already know this node at a deeper search level: use the known value
-        if (knownBestChildNodes.containsKey(serializeNode(node))) {
-            if (knownBestChildNodes.get(serializeNode(node)).searchedDepth >= depth) {
-                return knownBestChildNodes.get(serializeNode(node)).value;
-            }
+        if (knownBestChildNodes.containsKey(serializeNode(node))
+                && knownBestChildNodes.get(serializeNode(node)).searchedDepth >= depth) {
+            return knownBestChildNodes.get(serializeNode(node)).value;
         }
         if (depth == 0 || isTerminal(node)) {
             return heuristic(node);
