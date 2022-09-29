@@ -69,6 +69,42 @@ public class Ai implements Agent {
      */
     HashMap<String, BestChildNode> knownBestChildNodes;
 
+    /**
+     * used for the following stateCounter object.
+     * extends the HashMap by a function to in-/decrease values that are not necessarily present in the map.
+     */
+    class StateCounter extends HashMap<String, Integer> {
+        public void increase(String serializedNode) {
+            if (super.containsKey(serializedNode)) {
+                super.replace(serializedNode, super.get(serializedNode) + 1);
+            } else {
+                super.put(serializedNode, 1);
+            }
+        }
+
+        public void decrease(String serializedNode)  {
+            super.replace(serializedNode, super.get(serializedNode) - 1);
+        }
+
+        public int get(String serializedNode) {
+            if (super.get(serializedNode) == null) {
+                return 0;
+            }
+            return super.get(serializedNode);
+        }
+    }
+
+    /**
+     * counts the number of times a state has been visited.
+     * used to check for threefold repitition-checking.
+     * key is a serialized board, see #serializeNode(node).
+     * value is a Integer denoting the time a state has been visited.
+     * 
+     * This stateCounter is used to keep track of the actual game history across moves.
+     * THIS OBJECT IS MODIFIED DURING A RUN ON MINIMAX, BUT SHOULD RE-ENTER IT'S OLD STATE ON RETURN.
+     */
+    StateCounter stateCounter;
+
     public Ai(PlayerColor ownColor) {
         if (ownColor == PlayerColor.WHITE_PLAYER) {
             maximizingColor = Field.WHITE;
@@ -79,15 +115,25 @@ public class Ai implements Agent {
         }
 
         knownBestChildNodes = new HashMap<String, BestChildNode>();
+        StateCounter stateCounter = new StateCounter();
         System.out.printf("created new AI that plays %s (%c)%n", ownColor.getClientName(), maximizingColor.getChar());
     }
 
-    public void updateInternalBoard(Board board) {
+    /**
+     * Set the given board as the current state.
+     * Increases stateCounter, so this function should be called once FOR EACH OF BOTH PLAYER'S moves.
+     * This function therefore also be rephrased as a enterGameState(board) function.
+     * @param board
+     */
+    public void updateInternalBoard(final Board board) {
         currentBoard = board.getCopyOfBoard();
         boardWidth = board.width;
         boardHeight = board.height;
         serializedCurrentBoard = serializeNode(currentBoard);
-        nodeWithMargin = new Field[boardWidth + 4][boardHeight + 4];
+        nodeWithMargin = new Field[boardWidth + 4][boardHeight + 4]; // set all fields to null
+
+        // increase stateCounter for new board that opponent "created".
+        stateCounter.increase(serializedCurrentBoard);
     }
 
     /**
@@ -122,7 +168,10 @@ public class Ai implements Agent {
             int bestValueForThisDepth = Integer.MIN_VALUE;
             int alpha = Integer.MIN_VALUE;
             for (Field[][] child : getChildren(currentBoard, maximizingColor)) {
+                String serializedChild = serializeNode(child);
+                stateCounter.increase(serializedChild);
                 int mm = minimax(child, depth - 1, alpha, Integer.MAX_VALUE, false);
+                stateCounter.decrease(serializedChild);
                 if (shouldStop()) {
                     break;
                 }
@@ -194,6 +243,10 @@ public class Ai implements Agent {
         if (shouldStop()) {
             return 0;
         }
+        // if this state leads to a direct draw, return utility of 0
+        if (stateCounter.get(serializeNode(node)) == 3) {
+            return 0;
+        }
         // if we already know this node at a deeper search level: use the known value
         if (knownBestChildNodes.containsKey(serializeNode(node))) {
             if (knownBestChildNodes.get(serializeNode(node)).searchedDepth >= depth) {
@@ -208,7 +261,10 @@ public class Ai implements Agent {
             value = Integer.MIN_VALUE;
             Field[][] bestChild = null;
             for (Field[][] child : getChildren(node, maximizingColor)) {
+                String serializedChild = serializeNode(child);
+                stateCounter.increase(serializedChild);
                 int childValue = minimax(child, depth - 1, alpha, beta, false);
+                stateCounter.decrease(serializedChild);
                 if (childValue > value) {
                     value = childValue; // replacement for max function
                     bestChild = child;
@@ -224,7 +280,10 @@ public class Ai implements Agent {
             value = Integer.MAX_VALUE;
             Field[][] bestChild = null;
             for (Field[][] child : getChildren(node, minimizingColor)) {
+                String serializedChild = serializeNode(child);
+                stateCounter.increase(serializedChild);
                 int childValue = minimax(child, depth - 1, alpha, beta, true);
+                stateCounter.decrease(serializedChild);
                 if (childValue < value) {
                     value = childValue; // replacement for min function
                     bestChild = child;

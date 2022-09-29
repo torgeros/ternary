@@ -68,6 +68,9 @@ public class ConnectThree {
             } while (!moveValid);
             // send the move to the client
             client.makeMove(move);
+            // update agents board, the board variable got changed by processMove.
+            // update is processed after makeMove to be out of networking time-of-interest.
+            agent.updateInternalBoard(board);
             // update the UI
             board.print();
             if (board.isTerminal()) {
