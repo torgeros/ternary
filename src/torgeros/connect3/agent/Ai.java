@@ -182,12 +182,20 @@ public class Ai implements Agent {
             if (shouldStop()) {
                 break;
             }
+
+            // if this depth has only safe losses, use best node from previous depth.
+            // not allowed when depth is START_SEARCH_DEPTH, because there was no previous search
+            if (bestValueForThisDepth == -SCORE_SAFE_WIN && depth != START_SEARCH_DEPTH) {
+                System.out.printf("skipping best result from depth %d, it is a safe loss.%n", depth);
+                continue; // continuing allows to find draws
+            }
+
             // if the search at this depth was able to complete, overwrite bestNode
             bestNode = bestNodeForThisDepth;
             bestNodesValue = bestValueForThisDepth;
             // if safe win is found, take it.
             if (bestNodesValue == SCORE_SAFE_WIN) {
-                depth++; // search did complete as this depth
+                depth++; // search did complete at current depth
                 break;
             }
         }
