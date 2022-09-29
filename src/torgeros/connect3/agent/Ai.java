@@ -27,7 +27,7 @@ public class Ai implements Agent {
      * depth for first iteration.
      * Has to be a range for which any initial state takes less than START_OF_CUTOFF_MS to completely expand.
      */
-    protected int START_SEARCH_DEPTH = 4;
+    protected int START_SEARCH_DEPTH = 7;
 
     /**
      * time in milliseconds at which predicting is stopped.
@@ -173,7 +173,6 @@ public class Ai implements Agent {
         // complete search was to depth-1
         System.out.printf("completed search to depth %d.%n", depth-1);
         String move = getMoveFromDiff(currentBoard, bestNode);
-        System.out.printf("got minimax move %s%n", move);
         return move;
     }
 
