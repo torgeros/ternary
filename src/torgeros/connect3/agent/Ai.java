@@ -52,23 +52,6 @@ public class Ai implements Agent {
 
     long startOfCurrentOperationTimestamp;
 
-    private static class BestChildNode {
-        public int searchedDepth;
-        public Field[][] node;
-        public int value;
-    }
-
-    /**
-     * keep tracks of the best child that has been discovered for a specific board(parent).
-     * key is a serialized board, see #serializeNode(node).
-     * value is a BestChildNode object
-     * 
-     * there is no need to be able to tell apart whether it is max's or min's turn.
-     * that information is implicitly contained in the hashstring.
-     * a bestChild can therefore be either "best" for max (high value) or for min (low value).
-     */
-    HashMap<String, BestChildNode> knownBestChildNodes;
-
     /**
      * used for the following stateCounter object.
      * extends the HashMap by a function to in-/decrease values that are not necessarily present in the map.
@@ -118,7 +101,6 @@ public class Ai implements Agent {
             minimizingColor = Field.WHITE;
         }
 
-        knownBestChildNodes = new HashMap<String, BestChildNode>();
         stateCounter = new StateCounter();
         System.out.printf("created new AI that plays %s (%c)%n", ownColor.getClientName(), maximizingColor.getChar());
     }
@@ -152,14 +134,7 @@ public class Ai implements Agent {
         int bestNodesValue = Integer.MIN_VALUE;
         Field[][] bestNode = null;
 
-        int depth;
-        // if we already know the best child for the current board, we can start searching where we left off.
-        if (knownBestChildNodes.containsKey(serializedCurrentBoard)) {
-            depth = knownBestChildNodes.get(serializedCurrentBoard).searchedDepth + 1;
-            System.out.printf("we have been in this state before, starting search at depth %d.%n", depth);
-        } else {
-            depth = START_SEARCH_DEPTH;
-        }
+        int depth = START_SEARCH_DEPTH;
         // start iterative deepening
         for ( ; ; depth++) {
             Field[][] bestNodeForThisDepth = null;
@@ -197,44 +172,9 @@ public class Ai implements Agent {
         }
         // complete search was to depth-1
         System.out.printf("completed search to depth %d.%n", depth-1);
-        updateBestKnownChild(serializedCurrentBoard, bestNode, depth-1, bestNodesValue);
-        String move = getMoveFromDiff(currentBoard, knownBestChildNodes.get(serializedCurrentBoard).node);
+        String move = getMoveFromDiff(currentBoard, bestNode);
         System.out.printf("got minimax move %s%n", move);
         return move;
-    }
-
-    /**
-     * get the best child for the given parent, including provious knowledge (i.e. the history hashmap).
-     * the resulting BestChildNode is put/replaced in the history hashmap.
-     * value is not needed for children comparison, because deeper is always better.
-     * this method guarantees that there is an entry for serializedParent in history when it returns.
-     * @param serializedParent see #serializeNode()
-     * @param proposedBestChild 
-     * @param searchedDepth the depth where the proposedBestChild was found
-     * @param value the minimax value of proposedBestChild
-     * @return
-     */
-    protected void updateBestKnownChild(final String serializedParent, final Field[][] proposedBestChild, int searchedDepth, int value) {
-        if (knownBestChildNodes.containsKey(serializedParent)) {
-            if (searchedDepth > knownBestChildNodes.get(serializedParent).searchedDepth) {
-                // proposedBestChild is actually better/deeper than knownBest
-                BestChildNode newBest = new BestChildNode();
-                newBest.node = proposedBestChild;
-                newBest.value = value;
-                newBest.searchedDepth = searchedDepth;
-                knownBestChildNodes.replace(serializedParent, newBest);
-            } // else program failed to search deeper than known nodes
-        } else {
-            if (proposedBestChild == null) {
-                System.err.println("no child found. halting");
-                while(true);
-            }
-            BestChildNode newBest = new BestChildNode();
-            newBest.node = proposedBestChild;
-            newBest.value = value;
-            newBest.searchedDepth = searchedDepth;
-            knownBestChildNodes.put(serializedParent, newBest);
-        }
     }
 
     /**
@@ -249,13 +189,7 @@ public class Ai implements Agent {
         }
         // if this state leads to a direct draw, return utility of 0
         if (stateCounter.get(serializeNode(node)) == 3) {
-            System.out.println("TFD: found threefold draw at minimax call");
             return 0;
-        }
-        // if we already know this node at a deeper search level: use the known value
-        if (knownBestChildNodes.containsKey(serializeNode(node))
-                && knownBestChildNodes.get(serializeNode(node)).searchedDepth >= depth) {
-            return knownBestChildNodes.get(serializeNode(node)).value;
         }
         if (depth == 0 || isTerminal(node)) {
             return heuristic(node);
@@ -278,7 +212,6 @@ public class Ai implements Agent {
                     break;
                 }
             }
-            updateBestKnownChild(serializeNode(node), bestChild, depth, value);
             return value;
         } else {
             value = Integer.MAX_VALUE;
@@ -297,7 +230,6 @@ public class Ai implements Agent {
                     break;
                 }
             }
-            updateBestKnownChild(serializeNode(node), bestChild, depth, value);
             return value;
         }
     }
