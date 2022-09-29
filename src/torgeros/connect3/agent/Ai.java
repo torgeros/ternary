@@ -1,5 +1,6 @@
 package torgeros.connect3.agent;
 
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -49,6 +50,13 @@ public class Ai implements Agent {
      * positive score for max player, negative score for min player.
      */
     final int[] SCORE_FOR_RUNS = {0, 0, 50, SCORE_SAFE_WIN};
+
+    /**
+     * enable/disable the random selection of one of the best (i.e. equal utility) moves.
+     * only applied on top level.
+     */
+    final boolean PICK_RANDOM_BEST = true;
+    SecureRandom random;
 
     long startOfCurrentOperationTimestamp;
 
@@ -102,6 +110,10 @@ public class Ai implements Agent {
         }
 
         stateCounter = new StateCounter();
+
+        if (PICK_RANDOM_BEST) {
+            random = new SecureRandom();
+        }
         System.out.printf("created new AI that plays %s (%c)%n", ownColor.getClientName(), maximizingColor.getChar());
     }
 
@@ -156,6 +168,11 @@ public class Ai implements Agent {
                 }
                 if (mm > bestValueForThisDepth) {
                     // if current child is better than best known: replace.
+                    bestValueForThisDepth = mm;
+                    bestNodeForThisDepth = child;
+                } else if (mm == bestValueForThisDepth
+                        && random.nextBoolean()) {
+                    // if current child is equally good as best known: replace randomly.
                     bestValueForThisDepth = mm;
                     bestNodeForThisDepth = child;
                 }
