@@ -173,7 +173,6 @@ public class Ai implements Agent {
                 } else if (mm == bestValueForThisDepth
                         && random.nextBoolean()) {
                     // if current child is equally good as best known: replace randomly.
-                    bestValueForThisDepth = mm;
                     bestNodeForThisDepth = child;
                 }
                 alpha = Integer.max(alpha, bestValueForThisDepth);
