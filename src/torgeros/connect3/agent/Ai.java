@@ -197,7 +197,6 @@ public class Ai implements Agent {
         int value;
         if (maximizingPlayer) {
             value = Integer.MIN_VALUE;
-            Field[][] bestChild = null;
             for (Field[][] child : getChildren(node, maximizingColor)) {
                 String serializedChild = serializeNode(child);
                 stateCounter.increase(serializedChild);
@@ -205,7 +204,6 @@ public class Ai implements Agent {
                 stateCounter.decrease(serializedChild);
                 if (childValue > value) {
                     value = childValue; // replacement for max function
-                    bestChild = child;
                 }
                 alpha = Integer.max(alpha, value);
                 if (value >= beta) {
@@ -215,7 +213,6 @@ public class Ai implements Agent {
             return value;
         } else {
             value = Integer.MAX_VALUE;
-            Field[][] bestChild = null;
             for (Field[][] child : getChildren(node, minimizingColor)) {
                 String serializedChild = serializeNode(child);
                 stateCounter.increase(serializedChild);
@@ -223,7 +220,6 @@ public class Ai implements Agent {
                 stateCounter.decrease(serializedChild);
                 if (childValue < value) {
                     value = childValue; // replacement for min function
-                    bestChild = child;
                 }
                 beta = Integer.min(beta, value);
                 if (value <= alpha) {
