@@ -169,9 +169,14 @@ public class Ai implements Agent {
             // if the search at this depth was able to complete, overwrite bestNode
             bestNode = bestNodeForThisDepth;
             bestNodesValue = bestValueForThisDepth;
+            // if safe win is found, take it.
+            if (bestNodesValue == SCORE_SAFE_WIN) {
+                depth++; // search did complete as this depth
+                break;
+            }
         }
         // complete search was to depth-1
-        System.out.printf("completed search to depth %d.%n", depth-1);
+        System.out.printf("completed search to depth %d. Best moves value is %d.%n", depth-1, bestNodesValue);
         String move = getMoveFromDiff(currentBoard, bestNode);
         return move;
     }
