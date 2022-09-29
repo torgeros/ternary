@@ -22,6 +22,11 @@ public class EvaluatableAi extends Ai {
         numberOfMoves++;
         sumOfProcessingTime += stopTimestamp-startTimestamp;
 
+        if (super.maximizingColor == Field.WHITE) {
+            System.out.printf("move number %d.%n", numberOfMoves * 2 - 1);
+        } else {
+            System.out.printf("move number %d.%n", numberOfMoves * 2);
+        }
         System.out.printf("average processing time for every move up until now was %d ms.%n", sumOfProcessingTime / numberOfMoves);
         return move;
     }

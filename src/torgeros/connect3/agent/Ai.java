@@ -15,8 +15,8 @@ public class Ai implements Agent {
     int boardHeight;
     String serializedCurrentBoard;
 
-    final Field maximizingColor; // own color
-    final Field minimizingColor; // opponents color
+    protected final Field maximizingColor; // own color
+    protected final Field minimizingColor; // opponents color
     /**
      * initialized node for the heuristic to work with, to safe processing time.
      * including the margin of two null-Fields as discussed in the heuristic method.
@@ -28,7 +28,7 @@ public class Ai implements Agent {
      * depth for first iteration.
      * Has to be a range for which any initial state takes less than START_OF_CUTOFF_MS to completely expand.
      */
-    protected int START_SEARCH_DEPTH = 7;
+    protected int START_SEARCH_DEPTH = 1;
 
     /**
      * time in milliseconds at which predicting is stopped.
