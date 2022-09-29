@@ -152,9 +152,9 @@ public class Ai implements Agent {
 
     /**
      * get the best child for the given parent, including provious knowledge (i.e. the history hashmap).
-     * the returned BestChildNode should be put/replaced in the history hashmap.
+     * the resulting BestChildNode is put/replaced in the history hashmap.
      * value is not needed for children comparison, because deeper is always better.
-     * this method guarantees that there is an entry in knownBestChildNodes when it returns.
+     * this method guarantees that there is an entry for serializedParent in history when it returns.
      * @param serializedParent see #serializeNode()
      * @param proposedBestChild 
      * @param searchedDepth the depth where the proposedBestChild was found
