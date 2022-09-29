@@ -74,7 +74,11 @@ public class Ai implements Agent {
      * extends the HashMap by a function to in-/decrease values that are not necessarily present in the map.
      */
     class StateCounter extends HashMap<String, Integer> {
-        public void increase(String serializedNode) {
+        public StateCounter() {
+            super();
+        }
+
+        public void increase(final String serializedNode) {
             if (super.containsKey(serializedNode)) {
                 super.replace(serializedNode, super.get(serializedNode) + 1);
             } else {
@@ -82,11 +86,11 @@ public class Ai implements Agent {
             }
         }
 
-        public void decrease(String serializedNode)  {
+        public void decrease(final String serializedNode)  {
             super.replace(serializedNode, super.get(serializedNode) - 1);
         }
 
-        public int get(String serializedNode) {
+        public int get(final String serializedNode) {
             if (super.get(serializedNode) == null) {
                 return 0;
             }
@@ -115,7 +119,7 @@ public class Ai implements Agent {
         }
 
         knownBestChildNodes = new HashMap<String, BestChildNode>();
-        StateCounter stateCounter = new StateCounter();
+        stateCounter = new StateCounter();
         System.out.printf("created new AI that plays %s (%c)%n", ownColor.getClientName(), maximizingColor.getChar());
     }
 
