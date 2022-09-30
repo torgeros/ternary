@@ -7,6 +7,10 @@ import torgeros.connect3.agent.Ai;
 import torgeros.connect3.agent.EvaluatableAi;
 
 public class Ternary {
+    /**
+     * main function
+     * @param args to see valid args, run program withour parameters
+     */
     public static void main(String[] args) {
         if (args.length < 3) {
             exitWrongArgs();

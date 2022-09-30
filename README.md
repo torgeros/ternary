@@ -58,6 +58,8 @@ enum Field {
 }
 ```
 
+`Board` can be seen as a wrapper around a `Field[][]` with some utilitary functions like printing and accessing by the server index that starts at 1,1.
+
 ### ConnectThree.java
 
 Represents the game itself, holding an instance of one Board, one Agent and one GameClient
@@ -81,4 +83,4 @@ Main class. Handles command line arguments and initiates the game.
 
 ### util.java
 
-Contains some auxiliary code, more specifically a function that creates a deep-copy of a `Field[][]`.
+Contains some auxiliary code, more specifically a function that creates a deep-copy of a `Field[][]` and one for printing a `Field[][]` with borders around it.

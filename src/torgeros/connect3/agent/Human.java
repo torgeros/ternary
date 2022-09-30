@@ -17,6 +17,11 @@ public class Human implements Agent {
     }
 
     // TODO if this returns an invalid move, the program behaves unexpectedly and probably crashes
+    /**
+     * asks the user for a move they want to make.
+     * acceptes input in uppercase and lowercase for the direction parameter.
+     * @return a valid move-string
+     */
     public String getBestMove() {
         String move;
         Pattern pattern = Pattern.compile(String.format(

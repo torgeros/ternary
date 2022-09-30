@@ -26,6 +26,11 @@ public class GameClient {
     private final String HOSTNAME = "156trlinux-1.ece.mcgill.ca";
     private final int PORT = 12345;
 
+    /**
+     * initializes the network connection, does not start the game yet.
+     * @param gamename for matchmaking
+     * @param color as specified by the server documentation
+     */
     public GameClient(String gamename, String color) {
         this.gamename = gamename;
         this.color = color;
@@ -45,6 +50,10 @@ public class GameClient {
         }
     }
 
+    /**
+     * start game, wait for server to accept the game.
+     * will not return until two players are connected with the same gamestring.
+     */
     public void connect() {
         String gamestring = gamename + " " + color;
         writeLine(gamestring);
@@ -55,11 +64,19 @@ public class GameClient {
         System.out.println("connected to game server");
     }
 
+    /**
+     * publish one move to the server. has to be valid!
+     * wait for server to accept the move
+     */
     public void makeMove(String move) {
         writeLine(move);
         readAndVerify(move);
     }
 
+    /**
+     * wait until the server sends the opponent's move
+     * @return opponent's move
+     */
     public String getOpponentMove() {
         // game is considered to be connected
         try {
@@ -69,7 +86,7 @@ public class GameClient {
                 while(true);
             }
             if (input.startsWith("Timeout")) {
-                System.err.println("Server timeout trigerred, halting.");
+                System.err.println("Server timeout trigerred, halting. This can be considered a win.");
                 while (true);
             }
             return input;
