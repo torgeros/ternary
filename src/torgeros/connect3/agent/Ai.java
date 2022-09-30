@@ -203,8 +203,7 @@ public class Ai implements Agent {
         }
         // complete search was to depth-1
         System.out.printf("completed search to depth %d. Best moves value is %d.%n", depth-1, bestNodesValue);
-        String move = getMoveFromDiff(currentBoard, bestNode);
-        return move;
+        return getMoveFromDiff(currentBoard, bestNode);
     }
 
     /**
@@ -224,9 +223,8 @@ public class Ai implements Agent {
         if (depth == 0 || isTerminal(node)) {
             return heuristic(node);
         }
-        int value;
         if (maximizingPlayer) {
-            value = Integer.MIN_VALUE;
+            int value = Integer.MIN_VALUE;
             for (Field[][] child : getChildren(node, maximizingColor)) {
                 String serializedChild = serializeNode(child);
                 stateCounter.increase(serializedChild);
@@ -242,7 +240,7 @@ public class Ai implements Agent {
             }
             return value;
         } else {
-            value = Integer.MAX_VALUE;
+            int value = Integer.MAX_VALUE;
             for (Field[][] child : getChildren(node, minimizingColor)) {
                 String serializedChild = serializeNode(child);
                 stateCounter.increase(serializedChild);
