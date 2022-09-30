@@ -32,15 +32,15 @@ Sorted by filename in `src/torgeros/connect3`. The main game AI logic is in `src
 
 Common Interface for Human and AI players.
 
-### Human.java
+### agent/Human.java
 
 Agent that asks for user input for each move, so one can play manually with organized game state output. This is easier than using `netcat`, because the game state (board) is visualized before and after each move.
 
-### Ai.java
+### agent/Ai.java
 
 Contains the complete game playing agent-logic
 
-### Eval.java
+### agent/EvaluatableAi.java
 
 Wrapper around the Ai class that adds some extra evaluative (one might say debug) println statements.
 
