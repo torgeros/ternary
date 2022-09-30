@@ -1,6 +1,5 @@
 package torgeros.connect3;
 
-import java.sql.Struct;
 import torgeros.connect3.Board.Field;
 import torgeros.connect3.agent.Agent;
 import torgeros.connect3.GameClient;

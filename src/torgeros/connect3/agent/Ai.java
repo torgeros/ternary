@@ -145,7 +145,7 @@ public class Ai implements Agent {
     }
 
     /**
-     * Perform minimax with alphabeta pruning for all the current node/board.
+     * Perform minimax with alpha-beta-pruning for all the current node/board.
      * All children of the board are evaluated.
      * The "splitting" in subtrees or each child makes it easy to get the actual node out and not just the value/rating of the node.
      * @return the best of move in the defiend syntax
@@ -162,9 +162,9 @@ public class Ai implements Agent {
             Field[][] bestNodeForThisDepth = null;
 
             /*
-            rewritten max part of minimax,
-            for getting the node instead of its value.
-            This includes alpha-pruning (beta is irrelevant because we are maxing)
+            rewritten MAX part of minimax,
+            for getting the node Field[][]-instance rather than its value.
+            includes alpha-pruning, beta is irrelevant because we are maxing.
             */
             int bestValueForThisDepth = Integer.MIN_VALUE;
             int alpha = Integer.MIN_VALUE;
@@ -215,9 +215,10 @@ public class Ai implements Agent {
     }
 
     /**
+     * minimax with alpha-beta-pruning and some other (documented) tweaks
      * https://en.wikipedia.org/wiki/Minimax#Pseudocode
      * https://en.wikipedia.org/wiki/Alpha%E2%80%93beta_pruning#Pseudocode (soft-fail)
-     * MAX player always is this agent. The opponent is MIN.
+     * MAX player is this agent. The opponent is MIN.
      * the higher the return value, the better for this agent.
      */
     protected int minimax(Field[][] node, int depth, int alpha, int beta, boolean maximizingPlayer) {
@@ -231,7 +232,7 @@ public class Ai implements Agent {
         // terminal state: win/loss score weighted by distance.
         if (isTerminal(node)) {
             /*
-            weighting early results over late results.
+            weighting to prefer early results over late results.
             the distance from the current game state is given by the current search depth
             and the relative distance from this terminal node to the depth limit i.e. the param "depth".
             */
@@ -283,10 +284,17 @@ public class Ai implements Agent {
         }
     }
 
+    /**
+     * function to check for timeout
+     * @return false if code is allowed to continue, true if it should stop soon.
+     */
     protected boolean shouldStop() {
         return (System.currentTimeMillis() - startOfCurrentOperationTimestamp) > START_OF_CUTOFF_MS;
     }
 
+    /**
+     * returns a move-String that transforms the "current" board into "next".
+     */
     protected String getMoveFromDiff(final Field[][] current, final Field[][] next) {
         int oldX = -1;
         int oldY = -1;
@@ -371,11 +379,11 @@ public class Ai implements Agent {
         return list;
     }
 
+    /**
+     * checks all available runs of 3 on the board.
+     * returns true if it finds one
+     */
     protected boolean isTerminal(final Field[][] node) {
-        return getWinner(node) != Field.EMPTY;
-    }
-
-    protected Field getWinner(final Field[][] node) {
         //vertical
         //diagonal \
         //diagonal /
@@ -385,19 +393,19 @@ public class Ai implements Agent {
                     continue;
                 }
                 if (node[x][y] == node[x][y+1] && node[x][y] == node[x][y+2]) {
-                    return node[x][y];
+                    return true;
                 }
                 if (x+2 < boardWidth
                         // x+2 < width means index x+2 is within the array
                         && node[x][y] == node[x+1][y+1]
                         && node[x][y] == node[x+2][y+2]) {
-                            return node[x][y];
+                            return true;
                 }
                 if (x-2 > 0
                         // x-2 > 0 means index x-2 is within the array
                         && node[x][y] == node[x-1][y+1]
                         && node[x][y] == node[x-2][y+2]) {
-                            return node[x][y];
+                            return true;
                 }
             }
         }
@@ -409,12 +417,13 @@ public class Ai implements Agent {
                     continue;
                 }
                 if (node[x][y] == node[x+1][y] && node[x][y] == node[x+2][y]) {
-                    return node[x][y];
+                    return true;
                 }
             }
         }
-        return Field.EMPTY;
+        return false;
     }
+
     /**
      * heuristic function for minimax
      * 
