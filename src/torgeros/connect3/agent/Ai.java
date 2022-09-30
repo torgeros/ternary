@@ -47,6 +47,14 @@ public class Ai implements Agent {
     final int SCORE_SAFE_WIN = 0xFFFF;
 
     /**
+     * used to weight early over late wins/losses.
+     * has to be bigger than the biggest ever to be reached search depth
+     * has to be in a range that multiplying this with SCORE_SAFE_WIN can not overflow
+     * is decreased by 1 for every layer of the tree we search
+     */
+    final int SCORE_FACTOR_FOR_DEPTH_1 = 100;
+
+    /**
      * run of three: safe win.
      * run of two: good, score 50. Max number of 2-runs is 6 for a 2x2 square.
      * positive score for max player, negative score for min player.
@@ -196,7 +204,7 @@ public class Ai implements Agent {
             bestNode = bestNodeForThisDepth;
             bestNodesValue = bestValueForThisDepth;
             // if safe win is found, take it.
-            if (bestNodesValue == SCORE_SAFE_WIN) {
+            if (bestNodesValue >= SCORE_SAFE_WIN) {
                 depth++; // search did complete at current depth
                 break;
             }
@@ -220,7 +228,24 @@ public class Ai implements Agent {
         if (stateCounter.get(serializeNode(node)) == 3) {
             return 0;
         }
-        if (depth == 0 || isTerminal(node)) {
+        // terminal state: win/loss score weighted by distance.
+        if (isTerminal(node)) {
+            /*
+            weighting early results over late results.
+            the distance from the current game state is given by the current search depth
+            and the relative distance from this terminal node to the depth limit i.e. the param "depth".
+            */
+
+            /*
+            we can only enter a terminal state when the player who's turn it is wins
+            if we are in a terminal state and is MAX's turn, we know MIN has just won. And the other way around.
+            */
+
+            return /* weight */       (SCORE_FACTOR_FOR_DEPTH_1 - depth) *
+                   /* min/max score*/ (maximizingPlayer?-SCORE_SAFE_WIN:SCORE_SAFE_WIN);
+        }
+        // depth cutoff
+        if (depth == 0) {
             return heuristic(node);
         }
         if (maximizingPlayer) {
