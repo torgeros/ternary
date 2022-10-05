@@ -84,3 +84,9 @@ Main class. Handles command line arguments and initiates the game.
 ### util.java
 
 Contains some auxiliary code, more specifically a function that creates a deep-copy of a `Field[][]` and one for printing a `Field[][]` with borders around it.
+
+## License
+
+You are obviously not allowed to use this code while you are taking McGill's ECSE 526 (AI).
+
+For every other use case, the GPLv3 applies.
