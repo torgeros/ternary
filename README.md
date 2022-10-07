@@ -1,5 +1,9 @@
 # Ternary
 
+<img height="50" src="https://www.mcgill.ca/sites/all/themes/coltrane19/dist/mcgill-logo-red-reverse.db74b099.svg">
+
+A *dynamic connect-3* AI developed in McGill's ECSE 526 (Artificial Intelligence) class.
+
 ## Run Instructions
 
 First, compile the program by running 
